@@ -1,0 +1,354 @@
+<div class="page-header">
+  <h1>Dashboard</h1>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi-item">
+    <span class="material-icons-outlined kpi-mat-icon kpi-mat--neutral">bed</span>
+    <div class="kpi-text">
+      <span class="kpi-item-label">Ocupacao</span>
+      <span class="kpi-item-value">{{ quartosOcupados() }}<span class="kpi-item-total">/{{ totalQuartos() }}</span></span>
+    </div>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <span class="material-icons-outlined kpi-mat-icon kpi-mat--neutral">people</span>
+    <div class="kpi-text">
+      <span class="kpi-item-label">Hospedes Ativos</span>
+      <span class="kpi-item-value">{{ hospedesNaPousada().length }}</span>
+    </div>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <span class="material-icons-outlined kpi-mat-icon kpi-mat--neutral">event_note</span>
+    <div class="kpi-text">
+      <span class="kpi-item-label">Reservas Futuras</span>
+      <span class="kpi-item-value">{{ reservasPendentes().length }}</span>
+    </div>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <span class="material-icons-outlined kpi-mat-icon kpi-mat--neutral">restaurant</span>
+    <div class="kpi-text">
+      <span class="kpi-item-label">Comandas Abertas</span>
+      <span class="kpi-item-value">{{ comandasAbertas().length }}</span>
+    </div>
+  </div>
+</div>
+
+@if (checkinsHoje().length > 0 || checkoutsHoje().length > 0) {
+  <div class="alerts-section">
+    @if (checkinsHoje().length > 0) {
+      <div class="alert alert--checkin">
+        <i class="pi pi-sign-in"></i>
+        <span><strong>{{ checkinsHoje().length }}</strong> check-in(s) hoje:
+          @for (r of checkinsHoje(); track r.id; let last = $last) {
+            <strong>{{ r.hospede?.nome }}</strong> (Qto {{ r.quarto?.numero }}){{ last ? '' : ', ' }}
+          }
+        </span>
+      </div>
+    }
+    @if (checkoutsHoje().length > 0) {
+      <div class="alert alert--checkout">
+        <i class="pi pi-sign-out"></i>
+        <span><strong>{{ checkoutsHoje().length }}</strong> check-out(s) hoje:
+          @for (r of checkoutsHoje(); track r.id; let last = $last) {
+            <strong>{{ r.hospede?.nome }}</strong> (Qto {{ r.quarto?.numero }}){{ last ? '' : ', ' }}
+          }
+        </span>
+      </div>
+    }
+  </div>
+}
+
+<div class="rooms-overview" (click)="navigateTo('/quartos')">
+  <div class="rooms-overview-header">
+    <span class="rooms-overview-title"><span class="material-icons-outlined section-mat-icon">bed</span> Quartos</span>
+    <div class="rooms-legend">
+      @for (status of statusDistribution(); track status.label) {
+        <span class="legend-chip">
+          <span class="legend-dot" [style.background]="status.color"></span>
+          {{ status.label }} ({{ status.count }})
+        </span>
+      }
+    </div>
+  </div>
+  <div class="rooms-mini-grid">
+    @for (quarto of quartosMiniList(); track quarto.id) {
+      <div class="room-mini" [class]="'room-mini--' + quarto.status" (click)="onRoomClick(quarto); $event.stopPropagation()">
+        <span class="room-mini-num">{{ quarto.numero }}</span>
+        @if (quarto.status === 'ocupado' && quarto.guestName) {
+          <span class="room-mini-guest">{{ quarto.guestName }}</span>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Restaurante section -->
+@if (restauranteMini().length > 0) {
+  <div class="rooms-overview">
+    <div class="rooms-overview-header">
+      <span class="rooms-overview-title"><span class="material-icons-outlined section-mat-icon">restaurant</span> Restaurante</span>
+    </div>
+    <div class="resto-grid">
+      @for (item of restauranteMini(); track item.quartoNumero) {
+        <div class="resto-card" [class.resto-card--active]="item.temComanda" (click)="goToRestauranteQuarto(item.quartoId)">
+          <div class="resto-card-top">
+            <span class="resto-card-room">{{ item.quartoNumero }}</span>
+            <span class="resto-card-guest">{{ item.hospedeNome }}</span>
+          </div>
+          @if (item.temComanda) {
+            <div class="resto-card-comanda">
+              <span class="material-icons-outlined resto-card-icon">assignment</span>
+              <span class="resto-card-total">{{ item.comandaTotal | currency:'BRL':'symbol':'1.2-2' }}</span>
+            </div>
+          } @else {
+            <div class="resto-card-empty">
+              <span>Sem comanda</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<div class="dashboard-columns">
+  <div class="dashboard-column">
+    <p-card>
+      <ng-template #header>
+        <div class="section-header">
+          <span class="material-icons-outlined section-mat-icon">event_note</span>
+          <span>Proximas Reservas</span>
+          <span class="section-count">{{ proximosCheckins().length }}</span>
+        </div>
+      </ng-template>
+      @if (proximosCheckins().length === 0) {
+        <div class="empty-state">
+          <i class="pi pi-calendar-times"></i>
+          <p>Nenhuma reserva nos proximos dias</p>
+        </div>
+      } @else {
+        <div class="list-items">
+          @for (reserva of proximosCheckins(); track reserva.id) {
+            <div class="list-item list-item--clickable" (click)="openRoomDetail(reserva.idQuarto)">
+              <div class="list-item-main">
+                <span class="list-item-name">{{ reserva.hospede?.nome }}</span>
+                <span class="list-item-detail">Quarto {{ reserva.quarto?.numero }} - {{ reserva.quarto?.tipo }}</span>
+              </div>
+              <div class="list-item-side">
+                <p-tag
+                  [value]="getDateLabel(reserva.dataCheckin)"
+                  [severity]="isToday(reserva.dataCheckin) ? 'danger' : 'info'"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </p-card>
+  </div>
+
+  <!-- Finalized comandas — same grid -->
+  @if (comandasFechadas().length > 0) {
+    <div class="dashboard-column">
+      <p-card>
+        <ng-template #header>
+          <div class="section-header">
+            <span class="material-icons-outlined section-mat-icon">task_alt</span>
+            <span>Finalizadas Hoje</span>
+            <span class="section-count">{{ totalComandasFechadas() | currency:'BRL':'symbol':'1.0-0' }}</span>
+          </div>
+        </ng-template>
+        <div class="list-items">
+          @for (comanda of comandasFechadas(); track comanda.id) {
+            <div class="list-item list-item--clickable" (click)="openRoomDetail(comanda.reserva?.idQuarto ?? 0)">
+              <div class="list-item-main">
+                <span class="list-item-name">Qto {{ comanda.reserva?.quarto?.numero }} - {{ comanda.reserva?.hospede?.nome }}</span>
+                <span class="list-item-detail">{{ comanda.itens.length }} itens</span>
+              </div>
+              <span class="comanda-total">{{ comanda.total | currency:'BRL':'symbol':'1.2-2' }}</span>
+            </div>
+          }
+        </div>
+      </p-card>
+    </div>
+  }
+</div>
+
+<!-- Occupied room detail drawer -->
+<p-drawer
+  [visible]="drawerVisible()" (visibleChange)="drawerVisible.set($event)"
+  position="right"
+  [modal]="true"
+  styleClass="room-drawer"
+>
+  @if (roomDetail(); as detail) {
+    <ng-template #header>
+      <div class="drawer-header">
+        <span class="drawer-title">Quarto {{ detail.quarto.numero }}</span>
+        @if (detail.reserva) {
+          <p-tag [value]="detail.reserva.status" [severity]="detail.reserva.status === 'checkin' ? 'info' : detail.reserva.status === 'checkout' ? 'secondary' : 'warn'" />
+        }
+      </div>
+    </ng-template>
+
+    <div class="drawer-body">
+      @if (detail.reserva; as reserva) {
+        <div class="drawer-section">
+          <span class="drawer-label">Hospede</span>
+          <span class="drawer-value drawer-value--name">{{ reserva.hospede?.nome }}</span>
+        </div>
+
+        <div class="drawer-row">
+          <div class="drawer-section">
+            <span class="drawer-label">Check-in</span>
+            <span class="drawer-value">{{ reserva.dataCheckin | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="drawer-section">
+            <span class="drawer-label">Check-out</span>
+            <span class="drawer-value">{{ reserva.dataCheckout | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="drawer-section">
+          <span class="drawer-label">Hospedagem</span>
+          <span class="drawer-value">{{ reserva.valorTotal | currency:'BRL':'symbol':'1.2-2' }}</span>
+        </div>
+
+        @if (detail.comandas.length > 0) {
+          <div class="drawer-section">
+            <span class="drawer-label">Consumo ({{ detail.comandas.length }} comanda(s))</span>
+            @for (comanda of detail.comandas; track comanda.id) {
+              <div class="drawer-comanda">
+                @for (item of comanda.itens; track item.id) {
+                  <div class="drawer-comanda-item">
+                    <span>{{ item.quantidade }}x {{ item.produto?.nome ?? 'Item' }}</span>
+                    <span>{{ item.precoUnitario * item.quantidade | currency:'BRL':'symbol':'1.2-2' }}</span>
+                  </div>
+                }
+              </div>
+            }
+            <div class="drawer-subtotal">
+              <span>Total Consumo</span>
+              <span>{{ detail.totalComandas | currency:'BRL':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+        }
+
+        <div class="drawer-total">
+          <span>Total Geral</span>
+          <span>{{ detail.totalGeral | currency:'BRL':'symbol':'1.2-2' }}</span>
+        </div>
+
+        <div class="drawer-actions">
+          @if (reserva.status === 'checkin') {
+            <p-button label="Restaurante" icon="pi pi-receipt" [outlined]="true" (onClick)="goToRestaurante()" />
+            <p-button label="Fazer Check-out" icon="pi pi-sign-out" severity="danger" (onClick)="doCheckout(reserva.id)" />
+          } @else if (reserva.status === 'pendente') {
+            <p-button label="Confirmar" icon="pi pi-check" (onClick)="confirmReserva(reserva.id)" />
+          } @else if (reserva.status === 'confirmada') {
+            <p-button label="Fazer Check-in" icon="pi pi-sign-in" (onClick)="doCheckin(reserva.id)" />
+          }
+        </div>
+      }
+    </div>
+  }
+</p-drawer>
+
+<!-- New reservation dialog for free rooms -->
+<p-dialog
+  header="Nova Reserva"
+  [visible]="newReservaVisible()" (visibleChange)="newReservaVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '500px' }"
+  [draggable]="false"
+>
+  <p-fluid>
+    <div class="new-reserva-form">
+      <div class="form-field">
+        <label>Quarto</label>
+        <input pInputText [value]="selectedQuartoLabel()" [disabled]="true" />
+      </div>
+
+      <div class="form-field">
+        <label>Hospede *</label>
+        <div class="field-with-action">
+          <p-select
+            [options]="hospedeOptions()"
+            [(ngModel)]="newReservaForm.idHospede"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o hospede"
+            [filter]="true"
+            filterPlaceholder="Buscar..."
+            class="flex-grow"
+          />
+          <p-button icon="pi pi-user-plus" [rounded]="true" pTooltip="Novo hospede" (onClick)="openNewHospede()" size="small" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>Periodo *</label>
+        <p-datepicker
+          [(ngModel)]="newReservaForm.dateRange"
+          selectionMode="range"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [numberOfMonths]="2"
+          placeholder="Check-in e check-out"
+          appendTo="body"
+          [minDate]="today"
+        />
+      </div>
+
+      <div class="form-field">
+        <label>Observacoes</label>
+        <textarea pTextarea [(ngModel)]="newReservaForm.observacoes" rows="2" placeholder="Observacoes..."></textarea>
+      </div>
+    </div>
+  </p-fluid>
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="newReservaVisible.set(false)" />
+      <p-button label="Salvar" icon="pi pi-check" (onClick)="saveNewReserva()" [disabled]="!isNewReservaValid" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- New hospede dialog -->
+<p-dialog
+  header="Novo Hospede"
+  [visible]="newHospedeVisible()" (visibleChange)="newHospedeVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '420px' }"
+  [draggable]="false"
+>
+  <p-fluid>
+    <div class="new-reserva-form">
+      <div class="form-field">
+        <label>Nome *</label>
+        <input pInputText [(ngModel)]="newHospedeForm.nome" placeholder="Nome completo" />
+      </div>
+      <div class="form-field">
+        <label>Documento</label>
+        <input pInputText [(ngModel)]="newHospedeForm.documento" placeholder="CPF" />
+      </div>
+      <div class="form-field">
+        <label>Telefone</label>
+        <input pInputText [(ngModel)]="newHospedeForm.telefone" placeholder="(00) 00000-0000" />
+      </div>
+      <div class="form-field">
+        <label>Email</label>
+        <input pInputText [(ngModel)]="newHospedeForm.email" placeholder="email@exemplo.com" />
+      </div>
+    </div>
+  </p-fluid>
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="newHospedeVisible.set(false)" />
+      <p-button label="Criar e Selecionar" icon="pi pi-check" (onClick)="saveNewHospede()" [disabled]="!newHospedeForm.nome" />
+    </div>
+  </ng-template>
+</p-dialog>

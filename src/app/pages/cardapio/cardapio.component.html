@@ -1,0 +1,105 @@
+<div class="page-header">
+  <h1>Cardapio</h1>
+  <p-button label="Novo Produto" icon="pi pi-plus" (onClick)="openNew()" />
+</div>
+
+<div class="filter-bar">
+  <p-selectButton
+    [options]="categoriaOptions()"
+    [ngModel]="categoriaFilter()"
+    (ngModelChange)="onFilterChange($event)"
+    optionLabel="label"
+    optionValue="value"
+  />
+</div>
+
+<div class="products-grid">
+  @for (produto of produtosFiltrados(); track produto.id) {
+    <div class="product-tile" [class.product-tile--disabled]="!produto.disponivel" (click)="openEdit(produto)">
+      <span class="product-tile-name">{{ produto.nome }}</span>
+      <div class="product-tile-bottom">
+        <span class="product-tile-price">{{ produto.preco | currency:'BRL':'symbol':'1.2-2' }}</span>
+        <span class="product-tile-cat">{{ getCategoriaLabel(produto.idCategoria) }}</span>
+      </div>
+    </div>
+  } @empty {
+    <div class="empty-grid">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhum produto encontrado</p>
+    </div>
+  }
+</div>
+
+<p-dialog
+  [header]="isNewProduto() ? 'Novo Produto' : 'Editar Produto'"
+  [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '95vw', maxWidth: '500px' }"
+  [draggable]="false"
+>
+  @if (editingProduto(); as produto) {
+    <div class="dialog-form">
+      <div class="form-field">
+        <label for="nome">Nome</label>
+        <input
+          pInputText
+          id="nome"
+          [ngModel]="produto.nome"
+          (ngModelChange)="updateField('nome', $event)"
+          placeholder="Nome do produto"
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="categoria">Categoria</label>
+        <p-dropdown
+          id="categoria"
+          [options]="categoriaDropdownOptions()"
+          [ngModel]="produto.idCategoria"
+          (ngModelChange)="updateField('idCategoria', $event)"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '100%' }"
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="preco">Preco</label>
+        <p-inputNumber
+          id="preco"
+          [ngModel]="produto.preco"
+          (ngModelChange)="updateField('preco', $event ?? 0)"
+          mode="currency"
+          currency="BRL"
+          locale="pt-BR"
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="descricao">Descricao</label>
+        <textarea
+          pTextarea
+          id="descricao"
+          [ngModel]="produto.descricao"
+          (ngModelChange)="updateField('descricao', $event)"
+          [rows]="3"
+          placeholder="Descricao do produto"
+        ></textarea>
+      </div>
+
+      <div class="form-field toggle-field">
+        <label for="disponivel">Disponivel</label>
+        <p-toggleSwitch
+          id="disponivel"
+          [ngModel]="produto.disponivel"
+          (ngModelChange)="updateField('disponivel', $event)"
+        />
+      </div>
+
+      <div class="dialog-actions">
+        <p-button label="Cancelar" [outlined]="true" severity="secondary" (onClick)="cancel()" />
+        <p-button label="Salvar" icon="pi pi-check" (onClick)="save()" />
+      </div>
+    </div>
+  }
+</p-dialog>

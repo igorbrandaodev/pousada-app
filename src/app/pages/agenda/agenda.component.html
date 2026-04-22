@@ -1,0 +1,115 @@
+<div class="agenda-page">
+  <div class="agenda-header">
+    <div class="nav-section">
+      <p-button icon="pi pi-chevron-left" [rounded]="true" [text]="true" severity="secondary" (onClick)="navigatePrev()" />
+      <h1 class="month-label">{{ headerLabel() }}</h1>
+      <p-button icon="pi pi-chevron-right" [rounded]="true" [text]="true" severity="secondary" (onClick)="navigateNext()" />
+      <p-button label="Hoje" [text]="true" severity="info" size="small" (onClick)="goToToday()" />
+    </div>
+    <div class="view-toggle">
+      <p-selectbutton [options]="viewOptions" [ngModel]="viewMode()" (ngModelChange)="viewMode.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" />
+    </div>
+  </div>
+
+  @switch (viewMode()) {
+    @case ('mes') {
+      <div class="month-view">
+        <div class="month-header">
+          @for (d of weekdayLabels; track d) {
+            <div class="weekday">{{ d }}</div>
+          }
+        </div>
+        <div class="month-grid">
+          @for (day of monthDays(); track $index) {
+            <div class="day-cell"
+                 [class.day-cell--other-month]="!day.currentMonth"
+                 [class.day-cell--today]="day.isToday"
+                 (click)="selectDay(day.date)">
+              <div class="day-cell-header">
+                <span class="day-num">{{ day.dayNum }}</span>
+                @if (day.reservas.length > 3) {
+                  <span class="day-overflow">+{{ day.reservas.length - 3 }}</span>
+                }
+              </div>
+              <div class="day-reservas">
+                @for (r of day.reservas.slice(0, 3); track r.id) {
+                  <span class="day-pill" [class]="'day-pill--' + r.status"
+                        [title]="(r.hospede?.nome ?? '') + ' - Qto ' + getQuartoNum(r.idQuarto)"
+                        (click)="onPillClick(r); $event.stopPropagation()">
+                    Q{{ getQuartoNum(r.idQuarto) }} {{ (r.hospede?.nome ?? '?').split(' ')[0] }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @case ('semana') {
+      <div class="week-view">
+        <div class="week-grid">
+          <div class="week-header-row">
+            <div class="week-corner">Quarto</div>
+            @for (d of weekDays(); track d.date) {
+              <div class="week-day-header" [class.week-day-header--today]="d.isToday">
+                <div>{{ d.label }}</div>
+                <div class="week-day-num">{{ d.dayNum }}</div>
+              </div>
+            }
+          </div>
+          @for (quarto of quartos(); track quarto.id) {
+            <div class="week-row">
+              <div class="week-quarto">{{ quarto.numero }}</div>
+              @for (d of weekDays(); track d.date) {
+                <div class="week-cell" [class.week-cell--today]="d.isToday">
+                  @for (r of getReservasForRoomDate(quarto.id, d.date); track r.id) {
+                    <span class="reserva-pill" [class]="'reserva-pill--' + r.status"
+                          (click)="onPillClick(r); $event.stopPropagation()">{{ (r.hospede?.nome ?? '?').split(' ')[0] }}</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @case ('dia') {
+      <div class="day-view">
+        <table class="day-table">
+          <thead>
+            <tr>
+              <th>Quarto</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Hospede</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of dayItems(); track item.quarto.id) {
+              <tr>
+                <td><strong>{{ item.quarto.numero }}</strong></td>
+                <td>{{ item.quarto.tipo }}</td>
+                <td>
+                  @if (item.reserva) {
+                    <p-tag [value]="item.reserva.status" [severity]="getStatusSeverity(item.reserva.status)" />
+                  } @else {
+                    <p-tag value="Disponivel" severity="success" />
+                  }
+                </td>
+                <td>{{ item.reserva?.hospede?.nome ?? '—' }}</td>
+                <td>
+                  @if (item.reserva && item.reserva.status === 'checkin') {
+                    <p-button label="Comanda" icon="pi pi-receipt" [text]="true" size="small" (onClick)="goToComanda(item.quarto.id)" />
+                  } @else if (!item.reserva) {
+                    <p-button label="Reservar" icon="pi pi-plus" [text]="true" size="small" (onClick)="goToReservar(item.quarto.id)" />
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

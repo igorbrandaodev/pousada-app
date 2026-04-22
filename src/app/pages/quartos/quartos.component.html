@@ -1,0 +1,81 @@
+<div class="page-header">
+  <h1>Quartos</h1>
+  <p-button label="Novo Quarto" icon="pi pi-plus" (onClick)="openNew()" />
+</div>
+
+<div class="filter-bar">
+  <p-selectButton
+    [options]="statusOptions"
+    [ngModel]="statusFilter()"
+    (ngModelChange)="onFilterChange($event)"
+    optionLabel="label"
+    optionValue="value"
+  />
+</div>
+
+<div class="rooms-grid">
+  @for (quarto of quartosFiltrados(); track quarto.id) {
+    <div class="room-tile" [class]="'room-tile--' + quarto.status" (click)="openDetails(quarto)">
+      <span class="room-number">{{ quarto.numero }}</span>
+      <span class="room-type">{{ quarto.tipo }}</span>
+      @if (quarto.status === 'ocupado') {
+        <span class="room-guest">{{ getHospedeAtual(quarto) ?? '—' }}</span>
+      } @else {
+        <span class="room-status-label">{{ getStatusLabel(quarto.status) }}</span>
+      }
+    </div>
+  } @empty {
+    <div class="empty-grid">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhum quarto encontrado</p>
+    </div>
+  }
+</div>
+
+<p-dialog
+  [header]="isNewQuarto() ? 'Novo Quarto' : 'Quarto ' + (editingQuarto()?.numero ?? '')"
+  [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '95vw', maxWidth: '500px' }"
+  [draggable]="false"
+>
+  @if (editingQuarto(); as quarto) {
+    <div class="dialog-form">
+      <div class="form-field">
+        <label for="numero">Numero</label>
+        <input pInputText id="numero" [ngModel]="quarto.numero" (ngModelChange)="updateField('numero', $event)" placeholder="Ex: 101" />
+      </div>
+
+      <div class="form-field">
+        <label for="tipo">Tipo</label>
+        <p-dropdown id="tipo" [options]="tipoOptions" [ngModel]="quarto.tipo" (ngModelChange)="updateField('tipo', $event)" optionLabel="label" optionValue="value" [style]="{ width: '100%' }" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="capacidade">Capacidade</label>
+          <p-inputNumber id="capacidade" [ngModel]="quarto.capacidade" (ngModelChange)="updateField('capacidade', $event ?? 1)" [min]="1" [max]="10" [showButtons]="true" />
+        </div>
+        <div class="form-field">
+          <label for="andar">Andar</label>
+          <p-inputNumber id="andar" [ngModel]="quarto.andar" (ngModelChange)="updateField('andar', $event ?? 1)" [min]="1" [max]="10" [showButtons]="true" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="preco">Preco Diaria (R$)</label>
+        <p-inputNumber id="preco" [ngModel]="quarto.precoDiaria" (ngModelChange)="updateField('precoDiaria', $event ?? 0)" mode="currency" currency="BRL" locale="pt-BR" />
+      </div>
+
+      <div class="form-field">
+        <label for="status">Status</label>
+        <p-dropdown id="status" [options]="statusDropdownOptions" [ngModel]="quarto.status" (ngModelChange)="updateField('status', $event)" optionLabel="label" optionValue="value" [style]="{ width: '100%' }" />
+      </div>
+
+      <div class="dialog-actions">
+        <p-button label="Cancelar" [outlined]="true" severity="secondary" (onClick)="cancel()" />
+        <p-button label="Salvar" icon="pi pi-check" (onClick)="save()" />
+      </div>
+    </div>
+  }
+</p-dialog>

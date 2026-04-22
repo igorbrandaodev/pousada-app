@@ -1,0 +1,349 @@
+:host { display: block; }
+
+.restaurante-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    gap: 1.25rem;
+  }
+}
+
+.panel-quartos {
+  @media (min-width: 768px) {
+    flex: 0 0 240px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+  }
+}
+
+.panel-comanda {
+  flex: 1;
+  min-width: 0;
+
+  @media (min-width: 768px) {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+  }
+}
+
+.hidden-mobile {
+  @media (max-width: 767px) { display: none; }
+}
+
+.desktop-only {
+  @media (max-width: 767px) { display: none; }
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  i { color: var(--text-secondary); font-size: 1rem; }
+}
+
+// Room list
+.quarto-item {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: white;
+
+  &:hover { border-color: var(--primary-light); }
+
+  &.selected {
+    border-color: var(--primary);
+    background: var(--sidebar-active-bg);
+    box-shadow: 0 0 0 2px rgba(183, 98, 43, 0.12);
+  }
+}
+
+.quarto-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.quarto-item-numero {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.quarto-item-hospede {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quarto-item-comanda {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.comanda-total {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.85rem;
+}
+
+// Comanda header
+.comanda-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  :host ::ng-deep .btn-voltar {
+    @media (min-width: 768px) { display: none; }
+  }
+}
+
+.comanda-header-info {
+  flex: 1;
+  min-width: 0;
+
+  .panel-title { margin-bottom: 0; }
+}
+
+.comanda-hospede {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+// Comanda items — simple list, no table
+.comanda-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comanda-items {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.comanda-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child { border-bottom: none; }
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-detail {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.item-subtotal {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--success);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.comanda-items-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+// Total bar
+.comanda-total-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  background: var(--sidebar-active-bg);
+  border-radius: 8px;
+}
+
+.total-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.total-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.comanda-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comanda-closed-actions {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+// Add item section
+.add-item-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.add-item-toolbar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+}
+
+// Category chips
+.cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.cat-chip {
+  padding: 0.25rem 0.65rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+  }
+
+  &--active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+
+    &:hover { background: var(--primary-dark); }
+  }
+}
+
+// Product list — aligned rows
+.products-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--surface); }
+  &:active { background: var(--sidebar-active-bg); }
+}
+
+.product-row-name {
+  flex: 1;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-row-price {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--success);
+  white-space: nowrap;
+  min-width: 65px;
+  text-align: right;
+}
+
+.product-row-add {
+  color: var(--primary);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.1s;
+
+  .product-row:hover & { opacity: 1; }
+}
+
+// Empty states
+.empty-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+  gap: 0.5rem;
+
+  i { font-size: 2rem; opacity: 0.3; }
+  p { font-size: 0.85rem; }
+}
+
+.empty-products {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  padding: 1rem;
+}

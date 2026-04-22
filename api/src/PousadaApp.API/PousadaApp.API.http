@@ -1,0 +1,6 @@
+@PousadaApp.API_HostAddress = http://localhost:5233
+
+GET {{PousadaApp.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

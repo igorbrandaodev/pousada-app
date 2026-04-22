@@ -1,0 +1,80 @@
+<div class="layout-wrapper">
+  <!-- Desktop Sidebar -->
+  <aside class="sidebar-desktop">
+    <div class="sidebar-header">
+      <i class="pi pi-building"></i>
+      <span class="sidebar-title">PousadaApp</span>
+    </div>
+    <nav class="sidebar-nav">
+      @for (item of menuItems; track item.route) {
+        <a [routerLink]="item.route"
+           routerLinkActive="active"
+           class="nav-item"
+           pRipple>
+          @if (item.matIcon) {
+            <span class="material-icons-outlined nav-mat-icon">{{ item.matIcon }}</span>
+          } @else {
+            <i [class]="item.icon"></i>
+          }
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <!-- Mobile Sidebar (Drawer) -->
+  <p-drawer [visible]="sidebarVisible()" (visibleChange)="sidebarVisible.set($event)"
+            [showCloseIcon]="false"
+            [modal]="true"
+            styleClass="sidebar-drawer">
+    <ng-template #header>
+      <div class="sidebar-header">
+        <i class="pi pi-building"></i>
+        <span class="sidebar-title">PousadaApp</span>
+      </div>
+    </ng-template>
+    <nav class="sidebar-nav">
+      @for (item of menuItems; track item.route) {
+        <a [routerLink]="item.route"
+           routerLinkActive="active"
+           class="nav-item"
+           pRipple
+           (click)="closeSidebar()">
+          @if (item.matIcon) {
+            <span class="material-icons-outlined nav-mat-icon">{{ item.matIcon }}</span>
+          } @else {
+            <i [class]="item.icon"></i>
+          }
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </p-drawer>
+
+  <div class="layout-main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <p-button icon="pi pi-bars"
+                  [text]="true"
+                  severity="secondary"
+                  (onClick)="toggleSidebar()"
+                  styleClass="hamburger-btn" />
+        <span class="app-name">PousadaApp</span>
+      </div>
+      <div class="topbar-right">
+        <span class="user-name">{{ userName() }}</span>
+        <p-avatar [label]="userInitial()" shape="circle" styleClass="user-avatar" />
+        <p-button icon="pi pi-sign-out"
+                  [text]="true"
+                  severity="secondary"
+                  (onClick)="logout()" />
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="layout-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

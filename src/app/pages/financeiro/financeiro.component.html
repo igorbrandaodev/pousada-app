@@ -1,0 +1,125 @@
+<div class="page-header">
+  <h1>Financeiro</h1>
+</div>
+
+<div class="filters-bar">
+  <p-selectButton
+    [options]="periodoOptions"
+    [ngModel]="periodoFilter()"
+    (ngModelChange)="periodoFilter.set($event)"
+    optionLabel="label"
+    optionValue="value"
+    [allowEmpty]="false"
+  />
+  <p-select
+    [options]="tipoOptions"
+    [ngModel]="tipoFilter()"
+    (ngModelChange)="tipoFilter.set($event)"
+    optionLabel="label"
+    optionValue="value"
+    class="filter-tipo"
+  />
+</div>
+
+<div class="kpi-row">
+  <div class="kpi-item">
+    <span class="kpi-item-label">Receita Total</span>
+    <span class="kpi-item-value">{{ total() | currency:'BRL':'symbol':'1.0-0' }}</span>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <span class="kpi-item-label">Hospedagem</span>
+    <span class="kpi-item-value kpi-item-value--hosp">{{ totalHospedagem() | currency:'BRL':'symbol':'1.0-0' }}</span>
+    <span class="kpi-item-sub">{{ totalCheckouts() }} checkout(s)</span>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <span class="kpi-item-label">Restaurante</span>
+    <span class="kpi-item-value kpi-item-value--rest">{{ totalRestaurante() | currency:'BRL':'symbol':'1.0-0' }}</span>
+    <span class="kpi-item-sub">{{ totalComandasFechadas() }} comanda(s)</span>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <span class="kpi-item-label">Ticket Medio</span>
+    <span class="kpi-item-value">{{ avgStayValue() | currency:'BRL':'symbol':'1.0-0' }}</span>
+    <span class="kpi-item-sub">por estadia</span>
+  </div>
+</div>
+
+<div class="charts-row">
+  <p-card>
+    <ng-template #header>
+      <div class="section-header">
+        <i class="pi pi-chart-line"></i>
+        <span>Receita Acumulada</span>
+      </div>
+    </ng-template>
+    <div class="chart-container">
+      @if (filteredTransacoes().length > 0) {
+        <p-chart type="line" [data]="lineChartData()" [options]="lineChartOptions()" />
+      } @else {
+        <div class="empty-state"><i class="pi pi-chart-line"></i><p>Sem dados</p></div>
+      }
+    </div>
+  </p-card>
+
+  <p-card>
+    <ng-template #header>
+      <div class="section-header">
+        <i class="pi pi-chart-bar"></i>
+        <span>Receita por Dia</span>
+      </div>
+    </ng-template>
+    <div class="chart-container">
+      @if (filteredTransacoes().length > 0) {
+        <p-chart type="bar" [data]="barChartData()" [options]="barChartOptions()" />
+      } @else {
+        <div class="empty-state"><i class="pi pi-chart-bar"></i><p>Sem dados</p></div>
+      }
+    </div>
+  </p-card>
+</div>
+
+<div class="table-section">
+  <p-card>
+    <ng-template #header>
+      <div class="section-header">
+        <i class="pi pi-list"></i>
+        <span>Transacoes</span>
+        @if (filteredTransacoes().length > 0) {
+          <span class="section-count">({{ filteredTransacoes().length }})</span>
+        }
+      </div>
+    </ng-template>
+
+    @if (filteredTransacoes().length === 0) {
+      <div class="empty-state"><i class="pi pi-inbox"></i><p>Nenhuma transacao no periodo</p></div>
+    } @else {
+      <p-table
+        [value]="filteredTransacoes()"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        responsiveLayout="stack"
+        [breakpoint]="'768px'"
+      >
+        <ng-template #header>
+          <tr>
+            <th pSortableColumn="data">Data <p-sortIcon field="data" /></th>
+            <th>Descricao</th>
+            <th>Tipo</th>
+            <th pSortableColumn="valor">Valor <p-sortIcon field="valor" /></th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-t>
+          <tr>
+            <td><span class="p-column-title">Data</span>{{ t.data | date:'dd/MM/yyyy' }}</td>
+            <td><span class="p-column-title">Descricao</span>{{ t.descricao }}</td>
+            <td><span class="p-column-title">Tipo</span><p-tag [value]="getTagLabel(t.tipo)" [severity]="getTagSeverity(t.tipo)" /></td>
+            <td><span class="p-column-title">Valor</span><span class="valor-cell">{{ t.valor | currency:'BRL':'symbol':'1.2-2' }}</span></td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </p-card>
+</div>

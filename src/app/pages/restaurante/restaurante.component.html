@@ -1,0 +1,153 @@
+<div class="page-header">
+  <h1>Restaurante</h1>
+</div>
+
+<div class="restaurante-layout">
+  <div class="panel-quartos" [class.hidden-mobile]="selectedQuarto()">
+    <h2 class="panel-title">
+      <i class="pi pi-building"></i> Quartos Ocupados
+    </h2>
+
+    @for (item of quartosOcupados(); track item.idQuarto) {
+      <div
+        class="quarto-item"
+        [class.selected]="selectedQuartoId() === item.idQuarto"
+        [class.comanda-aberta]="item.comanda?.status === 'aberta'"
+        [class.comanda-fechada]="item.comanda?.status === 'fechada'"
+        (click)="selectQuarto(item.idQuarto)"
+      >
+        <div class="quarto-item-header">
+          <span class="quarto-item-numero">{{ item.quartoNumero }}</span>
+          <span class="quarto-item-hospede">{{ item.hospedeNome }}</span>
+        </div>
+        @if (item.comanda) {
+          <div class="quarto-item-comanda">
+            @if (item.comanda.status === 'aberta') {
+              <p-tag value="Comanda aberta" severity="info" />
+            } @else {
+              <p-tag value="Comanda fechada" severity="secondary" />
+            }
+            <span class="comanda-total">
+              {{ item.comanda.total | currency:'BRL':'symbol':'1.2-2' }}
+            </span>
+          </div>
+        } @else {
+          <p-button
+            label="Abrir Comanda"
+            icon="pi pi-plus"
+            size="small"
+            [outlined]="true"
+            (onClick)="abrirComanda(item.reserva.id, item.idQuarto); $event.stopPropagation()"
+          />
+        }
+      </div>
+    } @empty {
+      <div class="empty-panel">
+        <i class="pi pi-inbox"></i>
+        <p>Nenhum quarto ocupado</p>
+      </div>
+    }
+  </div>
+
+  <div class="panel-comanda" [class.hidden-mobile]="!selectedQuarto()">
+    @if (selectedQuarto(); as quarto) {
+      <div class="comanda-header-bar">
+        <p-button
+          icon="pi pi-arrow-left"
+          [text]="true"
+          size="small"
+          styleClass="btn-voltar"
+          (onClick)="voltarParaLista()"
+        />
+        <div class="comanda-header-info">
+          <h2 class="panel-title">Comanda - Quarto {{ quarto.quartoNumero }}</h2>
+          <span class="comanda-hospede">{{ quarto.hospedeNome }}</span>
+        </div>
+        @if (comandaAtiva()) {
+          <p-tag [value]="comandaAtiva()!.status" [styleClass]="'status-tag ' + comandaAtiva()!.status" />
+        }
+      </div>
+
+      @if (comandaAtiva(); as comanda) {
+        <div class="comanda-content">
+          <div class="comanda-items">
+            @for (item of comanda.itens; track item.id) {
+              <div class="comanda-item-row">
+                <div class="item-main">
+                  <span class="item-name">{{ item.produto?.nome ?? 'Produto' }}</span>
+                  <span class="item-detail">{{ item.quantidade }}x {{ item.precoUnitario | currency:'BRL':'symbol':'1.2-2' }}</span>
+                </div>
+                <span class="item-subtotal">{{ item.precoUnitario * item.quantidade | currency:'BRL':'symbol':'1.2-2' }}</span>
+                @if (comanda.status === 'aberta') {
+                  <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="removerItem(item.id)" />
+                }
+              </div>
+            } @empty {
+              <div class="comanda-items-empty">Nenhum item na comanda</div>
+            }
+          </div>
+
+          <div class="comanda-total-bar">
+            <span class="total-label">Total</span>
+            <span class="total-value">{{ comanda.total | currency:'BRL':'symbol':'1.2-2' }}</span>
+          </div>
+
+          @if (comanda.status === 'aberta') {
+            <div class="comanda-actions">
+              <p-button label="Fechar Comanda" icon="pi pi-lock" severity="danger" size="small" (onClick)="fecharComanda()" />
+            </div>
+
+            <div class="add-item-section">
+              <div class="add-item-toolbar">
+                <input pInputText placeholder="Buscar produto..." [ngModel]="searchText()" (ngModelChange)="onSearchChange($event)" class="search-input" />
+              </div>
+
+              <div class="cat-chips">
+                @for (cat of categoriaOptions(); track cat.value) {
+                  <button
+                    class="cat-chip"
+                    [class.cat-chip--active]="categoriaFilter() === cat.value"
+                    (click)="onCategoriaChange(cat.value)"
+                  >{{ cat.label }}</button>
+                }
+              </div>
+
+              <div class="products-list">
+                @for (produto of produtosDisponiveis(); track produto.id) {
+                  <div class="product-row" (click)="adicionarItem(produto)">
+                    <span class="product-row-name">{{ produto.nome }}</span>
+                    <span class="product-row-price">{{ produto.preco | currency:'BRL':'symbol':'1.2-2' }}</span>
+                    <i class="pi pi-plus-circle product-row-add"></i>
+                  </div>
+                } @empty {
+                  <p class="empty-products">Nenhum produto encontrado</p>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="comanda-closed-actions">
+              <p-button label="Abrir Nova Comanda" icon="pi pi-plus" [outlined]="true" (onClick)="abrirComanda(quarto.reserva.id, quarto.idQuarto)" />
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-panel">
+          <i class="pi pi-star"></i>
+          <p>Nenhuma comanda para este quarto</p>
+          <p-button
+            label="Abrir Comanda"
+            icon="pi pi-plus"
+            (onClick)="abrirComanda(quarto.reserva.id, quarto.idQuarto)"
+          />
+        </div>
+      }
+    } @else {
+      <div class="empty-panel desktop-only">
+        <i class="pi pi-arrow-left"></i>
+        <p>Selecione um quarto para ver a comanda</p>
+      </div>
+    }
+  </div>
+</div>
+
+<p-confirmDialog />

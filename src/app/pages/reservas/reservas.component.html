@@ -1,0 +1,177 @@
+<div class="page-header">
+  <h1>Reservas</h1>
+  <p-button label="Nova Reserva" icon="pi pi-plus" (onClick)="openNew()" />
+</div>
+
+<div class="kanban-board">
+  @for (col of kanbanColumns(); track col.status) {
+    <div class="kanban-column">
+      <div class="kanban-header" [style.border-top-color]="col.color">
+        <span class="kanban-title">{{ col.label }}</span>
+        <span class="kanban-count">{{ col.items.length }}</span>
+      </div>
+      <div
+        class="kanban-cards"
+        cdkDropList
+        [id]="'col-' + col.status"
+        [cdkDropListData]="col.items"
+        [cdkDropListConnectedTo]="columnIds"
+        (cdkDropListDropped)="onDrop($event, col.status)"
+      >
+        @for (reserva of col.items; track reserva.id) {
+          <div class="kanban-card" cdkDrag [cdkDragData]="reserva" (click)="editReserva(reserva)">
+            <div class="kanban-card-header">
+              <span class="kanban-guest">{{ reserva.hospede?.nome ?? 'Hospede' }}</span>
+              <span class="kanban-room">Q.{{ reserva.quarto?.numero ?? '?' }}</span>
+            </div>
+            <div class="kanban-card-dates">
+              {{ formatDate(reserva.dataCheckin) }} → {{ formatDate(reserva.dataCheckout) }}
+            </div>
+            <div class="kanban-card-footer">
+              <span class="kanban-value">{{ formatCurrency(reserva.valorTotal) }}</span>
+              <div class="kanban-actions">
+                @if (reserva.status === 'pendente') {
+                  <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success" size="small" pTooltip="Confirmar" (onClick)="confirmarReserva(reserva); $event.stopPropagation()" />
+                }
+                @if (reserva.status === 'confirmada') {
+                  <p-button icon="pi pi-sign-in" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="Check-in" (onClick)="fazerCheckin(reserva); $event.stopPropagation()" />
+                }
+                @if (reserva.status === 'checkin') {
+                  <p-button icon="pi pi-sign-out" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="Check-out" (onClick)="fazerCheckout(reserva); $event.stopPropagation()" />
+                }
+                @if (reserva.status !== 'checkout' && reserva.status !== 'cancelada') {
+                  <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" size="small" pTooltip="Cancelar" (onClick)="cancelarReserva(reserva); $event.stopPropagation()" />
+                }
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="kanban-empty">Nenhuma</div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<p-dialog
+  [header]="editing() ? 'Editar Reserva' : 'Nova Reserva'"
+  [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '550px' }"
+  [draggable]="false"
+>
+  <p-fluid>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="hospede">Hóspede *</label>
+        <div class="field-with-action">
+          <p-select
+            id="hospede"
+            [options]="hospedeOptions()"
+            [(ngModel)]="reservaForm.idHospede"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o hóspede"
+            [filter]="true"
+            filterPlaceholder="Buscar hóspede..."
+            class="flex-grow"
+          />
+          <p-button
+            icon="pi pi-user-plus"
+            [rounded]="true"
+            pTooltip="Novo hóspede"
+            (onClick)="openNewHospede()"
+            size="small"
+          />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="quarto">Quarto *</label>
+        <p-select
+          id="quarto"
+          [options]="quartoOptions()"
+          [(ngModel)]="reservaForm.idQuarto"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecione o quarto"
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="periodo">Período (Check-in → Check-out) *</label>
+        <p-datepicker
+          id="periodo"
+          [(ngModel)]="reservaForm.dateRange"
+          selectionMode="range"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [numberOfMonths]="2"
+          placeholder="Selecione check-in e check-out"
+          appendTo="body"
+          [minDate]="today"
+        />
+      </div>
+
+      @if (nightsCount > 0 && dailyRate > 0) {
+        <div class="price-summary">
+          <span>{{ nightsCount }} noite(s) x {{ formatCurrency(dailyRate) }}</span>
+          <strong>= {{ formatCurrency(calculatedTotal) }}</strong>
+        </div>
+      }
+
+      <div class="form-field">
+        <label for="obs">Observações</label>
+        <textarea pTextarea id="obs" [(ngModel)]="reservaForm.observacoes" rows="3" placeholder="Observações sobre a reserva..."></textarea>
+      </div>
+    </div>
+  </p-fluid>
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+      <p-button label="Salvar" icon="pi pi-check" (onClick)="saveReserva()" [disabled]="!isFormValid" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Novo Hóspede"
+  [visible]="hospedeDialogVisible()" (visibleChange)="hospedeDialogVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '450px' }"
+  [draggable]="false"
+>
+  <p-fluid>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Nome *</label>
+        <input pInputText [(ngModel)]="newHospede.nome" placeholder="Nome completo" />
+      </div>
+      <div class="form-field">
+        <label>Documento</label>
+        <input pInputText [(ngModel)]="newHospede.documento" placeholder="CPF ou RG" />
+      </div>
+      <div class="form-field">
+        <label>Telefone</label>
+        <input pInputText [(ngModel)]="newHospede.telefone" placeholder="(00) 00000-0000" />
+      </div>
+      <div class="form-field">
+        <label>Email</label>
+        <input pInputText [(ngModel)]="newHospede.email" placeholder="email@exemplo.com" />
+      </div>
+      <div class="form-field">
+        <label>Cidade</label>
+        <input pInputText [(ngModel)]="newHospede.cidade" placeholder="Cidade" />
+      </div>
+    </div>
+  </p-fluid>
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="hospedeDialogVisible.set(false)" />
+      <p-button label="Criar e Selecionar" icon="pi pi-check" (onClick)="saveNewHospede()" [disabled]="!newHospede.nome" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog />

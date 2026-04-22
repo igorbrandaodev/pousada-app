@@ -1,0 +1,141 @@
+@import 'primeicons/primeicons.css';
+
+:root {
+  // Serra da Canastra palette — earth, cerrado, sky
+  --primary: #B7622B;
+  --primary-light: #D4845C;
+  --primary-dark: #8B4A1D;
+  --surface: #FAFAF8;
+  --text: #2D2A26;
+  --text-secondary: #6B6560;
+  --border: #E0DBD5;
+  --success: #3A7D44;
+  --warning: #D49B0D;
+  --danger: #C43C3C;
+  --info: #4A8FD9;
+
+  --sidebar-bg: #FFFFFF;
+  --sidebar-text: #6B6560;
+  --sidebar-text-hover: #2D2A26;
+  --sidebar-active-bg: #FDF2EC;
+  --sidebar-border: #E8E3DD;
+
+  --checkout-color: #8C857E;
+  --amber: #D49B0D;
+
+  --bg-checkout: #F3F1EE;
+
+  --bg-disponivel: #E8F3EA;
+  --bg-ocupado: #FCEAE8;
+  --bg-manutencao: #FDF5E0;
+  --bg-limpeza: #E6EFF8;
+
+  --bg-pendente: #FDF5E0;
+  --bg-confirmada: #E8F3EA;
+  --bg-checkin: #E6EFF8;
+  --bg-cancelada: #FCEAE8;
+
+  --cat-bebidas: #4A8FD9;
+  --cat-pratos: #C43C3C;
+  --cat-petiscos: #D49B0D;
+  --cat-sobremesas: #A1527A;
+  --cat-drinks: #7B5EA7;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+
+  @media (min-width: 480px) { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 768px) { grid-template-columns: repeat(3, 1fr); }
+  @media (min-width: 992px) { grid-template-columns: repeat(4, 1fr); }
+  @media (min-width: 1200px) { grid-template-columns: repeat(5, 1fr); }
+  @media (min-width: 1400px) { grid-template-columns: repeat(6, 1fr); }
+}
+
+.status-tag {
+  &.pendente { background: var(--warning); color: white; }
+  &.confirmada { background: var(--success); color: white; }
+  &.checkin { background: var(--info); color: white; }
+  &.checkout { background: var(--checkout-color); color: white; }
+  &.cancelada { background: var(--danger); color: white; }
+  &.disponivel { background: var(--success); color: white; }
+  &.ocupado { background: var(--danger); color: white; }
+  &.manutencao { background: var(--warning); color: white; }
+  &.limpeza { background: var(--info); color: white; }
+  &.aberta { background: var(--info); color: white; }
+  &.fechada { background: #666; color: white; }
+}
+
+.bg-disponivel { background-color: var(--bg-disponivel) !important; }
+.bg-ocupado { background-color: var(--bg-ocupado) !important; }
+.bg-manutencao { background-color: var(--bg-manutencao) !important; }
+.bg-limpeza { background-color: var(--bg-limpeza) !important; }
+
+// Room detail drawer
+.room-drawer.p-drawer {
+  width: 380px !important;
+
+  @media (max-width: 480px) {
+    width: 100% !important;
+  }
+}
+
+// PrimeNG Drawer (mobile sidebar)
+.sidebar-drawer {
+  &.p-drawer {
+    background: white;
+    width: 280px !important;
+  }
+
+  .p-drawer-header {
+    background: white;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .p-drawer-content {
+    background: white;
+    padding: 0;
+  }
+}

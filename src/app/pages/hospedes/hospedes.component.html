@@ -1,0 +1,85 @@
+<div class="page-header">
+  <h1>Hóspedes</h1>
+  <p-button label="Novo Hóspede" icon="pi pi-plus" (onClick)="openNew()" />
+</div>
+
+<div class="search-bar">
+  <p-iconfield>
+    <p-inputicon styleClass="pi pi-search" />
+    <input pInputText type="text" placeholder="Buscar por nome, documento, email..." (input)="onSearch($event)" [value]="searchValue()" />
+  </p-iconfield>
+</div>
+
+<div class="hospedes-grid">
+  @for (hospede of filteredHospedes(); track hospede.id) {
+    <div class="hospede-card" (click)="editHospede(hospede)">
+      <div class="hospede-avatar">{{ getInitials(hospede.nome) }}</div>
+      <div class="hospede-info">
+        <span class="hospede-nome">{{ hospede.nome }}</span>
+        <span class="hospede-doc">{{ hospede.documento }}</span>
+        <div class="hospede-contact">
+          @if (hospede.telefone) {
+            <span><i class="pi pi-phone"></i> {{ hospede.telefone }}</span>
+          }
+          @if (hospede.cidade) {
+            <span><i class="pi pi-map-marker"></i> {{ hospede.cidade }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="empty-state">
+      <i class="pi pi-users"></i>
+      <p>Nenhum hóspede encontrado</p>
+    </div>
+  }
+</div>
+
+<p-dialog
+  [header]="editing() ? 'Editar Hóspede' : 'Novo Hóspede'"
+  [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '500px' }"
+  [draggable]="false"
+>
+  <p-fluid>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="nome">Nome *</label>
+        <input pInputText id="nome" [(ngModel)]="hospedeForm.nome" placeholder="Nome completo" />
+      </div>
+
+      <div class="form-field">
+        <label for="documento">Documento (CPF)</label>
+        <p-inputmask id="documento" [(ngModel)]="hospedeForm.documento" mask="999.999.999-99" placeholder="000.000.000-00" />
+      </div>
+
+      <div class="form-field">
+        <label for="telefone">Telefone</label>
+        <p-inputmask id="telefone" [(ngModel)]="hospedeForm.telefone" mask="(99) 99999-9999" placeholder="(00) 00000-0000" />
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input pInputText id="email" [(ngModel)]="hospedeForm.email" placeholder="email@exemplo.com" type="email" />
+      </div>
+
+      <div class="form-field">
+        <label for="cidade">Cidade</label>
+        <input pInputText id="cidade" [(ngModel)]="hospedeForm.cidade" placeholder="Cidade, UF" />
+      </div>
+
+      <div class="form-field">
+        <label for="observacoes">Observações</label>
+        <textarea pTextarea id="observacoes" [(ngModel)]="hospedeForm.observacoes" rows="3" placeholder="Observações sobre o hóspede..."></textarea>
+      </div>
+    </div>
+  </p-fluid>
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+      <p-button label="Salvar" icon="pi pi-check" (onClick)="saveHospede()" [disabled]="!hospedeForm.nome.trim()" />
+    </div>
+  </ng-template>
+</p-dialog>

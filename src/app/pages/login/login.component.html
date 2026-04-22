@@ -1,0 +1,45 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <i class="pi pi-building login-icon"></i>
+      <h1>PousadaApp</h1>
+      <p>Sistema de Gestao</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="field">
+        <label for="email">Email</label>
+        <input pInputText
+               id="email"
+               type="email"
+               placeholder="seu@email.com"
+               [ngModel]="email()"
+               (ngModelChange)="email.set($event)"
+               name="email"
+               class="input-full" />
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <p-password id="password"
+                    [ngModel]="password()"
+                    (ngModelChange)="password.set($event)"
+                    name="password"
+                    placeholder="Sua senha"
+                    [feedback]="false"
+                    [toggleMask]="true"
+                    styleClass="input-full" />
+      </div>
+
+      @if (errorMessage()) {
+        <p-message severity="error" [text]="errorMessage()" styleClass="login-error" />
+      }
+
+      <p-button label="Entrar"
+                icon="pi pi-sign-in"
+                type="submit"
+                [loading]="loading()"
+                styleClass="login-btn" />
+    </form>
+  </div>
+</div>
