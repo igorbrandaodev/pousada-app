@@ -1,0 +1,15 @@
+.git
+.github
+.vscode
+.claude
+.angular
+node_modules
+dist
+tmp
+out-tsc
+coverage
+*.log
+api
+mssql-data
+.env
+README.md

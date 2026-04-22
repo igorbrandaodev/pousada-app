@@ -1,59 +1,99 @@
 # PousadaApp
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.22.
+Sistema SaaS multi-tenant de gestao integrada para pousadas, desenvolvido como TCC do MBA em Data Science & Analytics da USP/Esalq.
 
-## Development server
+Integra **Hospedagem** (quartos, hospedes, reservas), **Restaurante / POS** (cardapio, comandas) e **Financeiro** (consolidacao de receitas) em uma unica plataforma.
 
-To start a local development server, run:
+## Stack
 
-```bash
-ng serve
-```
+| Camada | Tecnologia |
+| --- | --- |
+| Frontend | Angular 19 + PrimeNG + Material Icons (signals, standalone components, novo control flow) |
+| Backend | .NET 8 Clean Architecture + EF Core |
+| Auth | JWT Bearer + BCrypt |
+| Banco | SQL Server 2022 |
+| Tests | xUnit (77 testes) |
+| DevOps | Docker Compose, GitHub Actions, Azure App Service |
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Rodando com Docker (recomendado)
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Pre-requisitos: Docker Desktop instalado.
 
 ```bash
-ng generate --help
+# 1. Copiar variaveis de ambiente
+cp .env.example .env
+# (edite .env e ajuste DB_PASSWORD e JWT_KEY se quiser)
+
+# 2. Subir toda a stack (DB + API + Frontend)
+docker compose up --build
 ```
 
-## Building
+Servicos:
 
-To build the project run:
+| URL | O que e |
+| --- | --- |
+| http://localhost:4200 | Frontend Angular (nginx) |
+| http://localhost:5000/api | API .NET 8 |
+| localhost:1433 | SQL Server (sa / valor de DB_PASSWORD) |
+
+Para parar: `docker compose down` (mantem dados). Para apagar volume do banco: `docker compose down -v`.
+
+### Login padrao
+
+```
+Email:  admin@pousadaapp.com
+Senha:  admin123
+```
+
+(Definidos no seed do banco em `api/src/PousadaApp.Infrastructure/Data/SeedData.cs`.)
+
+## Desenvolvimento local (sem Docker)
+
+### Frontend
 
 ```bash
-ng build
+npm install
+npx ng serve
+# http://localhost:4200
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Backend
 
 ```bash
-ng test
+cd api
+dotnet restore
+dotnet ef database update --project src/PousadaApp.Infrastructure --startup-project src/PousadaApp.API
+dotnet run --project src/PousadaApp.API
+# http://localhost:5000
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+### Testes
 
 ```bash
-ng e2e
+cd api
+dotnet test
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Estrutura
 
-## Additional Resources
+```
+pousada-app/
+  src/                           # Frontend Angular
+    app/
+      core/                      # services, models, guards, interceptors, layout
+      pages/                     # dashboard, agenda, hospedes, quartos, reservas, restaurante, cardapio, financeiro, login
+  api/                           # Backend .NET 8
+    src/
+      PousadaApp.Domain/         # entidades, value objects
+      PousadaApp.Infrastructure/ # EF Core, repos, migrations, seed
+      PousadaApp.API/            # controllers, DTOs, JWT, Program.cs
+    tests/PousadaApp.Tests/      # xUnit
+  docker-compose.yml
+  Dockerfile.frontend            # nginx + build Angular
+  api/Dockerfile                 # .NET 8 runtime
+  .github/workflows/             # CI + deploys Azure
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## TCC
+
+Documento completo, diagramas e prints em `Desktop/TCC MBA/` (fora deste repositorio publico).
