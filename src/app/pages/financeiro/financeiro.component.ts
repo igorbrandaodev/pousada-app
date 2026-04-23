@@ -218,7 +218,8 @@ export class FinanceiroComponent {
     this.filteredTransacoes();
     return {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
+      aspectRatio: 2,
       plugins: {
         legend: {
           position: 'bottom' as const,
@@ -289,7 +290,8 @@ export class FinanceiroComponent {
     this.filteredTransacoes();
     return {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
+      aspectRatio: 2,
       plugins: {
         legend: { display: false },
         tooltip: {
