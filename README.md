@@ -43,7 +43,7 @@ Para parar: `docker compose down` (mantem dados). Para apagar volume do banco: `
 ### Login padrao
 
 ```
-Email:  admin@pousadaapp.com
+Email:  admin@pousada.com
 Senha:  admin123
 ```
 

@@ -1,5 +1,5 @@
 import { Component, inject, computed, signal } from '@angular/core';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
@@ -20,10 +20,16 @@ interface Transacao {
   valor: number;
 }
 
+interface Variacao {
+  percent: number;
+  positive: boolean;
+  hasData: boolean;
+}
+
 @Component({
   selector: 'app-financeiro',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, FormsModule, CardModule, ChartModule, TableModule, TagModule, ButtonModule, SelectButtonModule, Select],
+  imports: [CurrencyPipe, DatePipe, DecimalPipe, FormsModule, CardModule, ChartModule, TableModule, TagModule, ButtonModule, SelectButtonModule, Select],
   templateUrl: './financeiro.component.html',
   styleUrl: './financeiro.component.scss'
 })
@@ -100,6 +106,24 @@ export class FinanceiroComponent {
     return items;
   });
 
+  // Período anterior para comparação (mesma duração imediatamente antes do período atual)
+  protected readonly previousTransacoes = computed<Transacao[]>(() => {
+    const days = this.periodoFilter();
+    if (days <= 0) return [];
+
+    const start = new Date();
+    start.setDate(start.getDate() - days * 2);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setDate(end.getDate() - days);
+    end.setHours(0, 0, 0, 0);
+
+    let items = this.allTransacoes().filter(t => t.data >= start && t.data < end);
+    const tipo = this.tipoFilter();
+    if (tipo !== 'todos') items = items.filter(t => t.tipo === tipo);
+    return items;
+  });
+
   protected readonly totalHospedagem = computed(() =>
     this.filteredTransacoes().filter(t => t.tipo === 'hospedagem').reduce((sum, t) => sum + t.valor, 0)
   );
@@ -123,11 +147,38 @@ export class FinanceiroComponent {
     this.filteredTransacoes().filter(t => t.tipo === 'restaurante').length
   );
 
+  // Totais período anterior
+  private readonly prevTotalHospedagem = computed(() =>
+    this.previousTransacoes().filter(t => t.tipo === 'hospedagem').reduce((s, t) => s + t.valor, 0)
+  );
+  private readonly prevTotalRestaurante = computed(() =>
+    this.previousTransacoes().filter(t => t.tipo === 'restaurante').reduce((s, t) => s + t.valor, 0)
+  );
+  private readonly prevTotal = computed(() => this.prevTotalHospedagem() + this.prevTotalRestaurante());
+  private readonly prevAvgStay = computed(() => {
+    const stays = this.previousTransacoes().filter(t => t.tipo === 'hospedagem');
+    return stays.length > 0 ? stays.reduce((s, t) => s + t.valor, 0) / stays.length : 0;
+  });
+
+  // Variação % vs período anterior
+  private calcVariacao(current: number, previous: number): Variacao {
+    // No previous baseline -> variação é indefinida (mostra como sem comparativo)
+    if (previous === 0) return { percent: 0, positive: true, hasData: false };
+    const delta = ((current - previous) / previous) * 100;
+    return { percent: Math.abs(delta), positive: delta >= 0, hasData: true };
+  }
+
+  protected readonly varTotal = computed(() => this.calcVariacao(this.total(), this.prevTotal()));
+  protected readonly varHospedagem = computed(() => this.calcVariacao(this.totalHospedagem(), this.prevTotalHospedagem()));
+  protected readonly varRestaurante = computed(() => this.calcVariacao(this.totalRestaurante(), this.prevTotalRestaurante()));
+  protected readonly varTicket = computed(() => this.calcVariacao(this.avgStayValue(), this.prevAvgStay()));
+
   protected readonly periodoLabel = computed(() => {
     const d = this.periodoFilter();
     return this.periodoOptions.find(o => o.value === d)?.label ?? '';
   });
 
+  // Gráfico de barras empilhadas: receita por dia separada por tipo
   protected readonly barChartData = computed(() => {
     const items = this.filteredTransacoes();
     const byDay: Record<string, { hosp: number; rest: number }> = {};
@@ -141,8 +192,24 @@ export class FinanceiroComponent {
     return {
       labels,
       datasets: [
-        { label: 'Hospedagem', data: labels.map(l => byDay[l].hosp), backgroundColor: '#B7622B' },
-        { label: 'Restaurante', data: labels.map(l => byDay[l].rest), backgroundColor: '#D49B0D' },
+        {
+          label: 'Hospedagem',
+          data: labels.map(l => byDay[l].hosp),
+          backgroundColor: '#4A8FD9',
+          borderRadius: 4,
+          borderSkipped: false,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+        },
+        {
+          label: 'Restaurante',
+          data: labels.map(l => byDay[l].rest),
+          backgroundColor: '#D49B0D',
+          borderRadius: 4,
+          borderSkipped: false,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+        },
       ],
     };
   });
@@ -152,11 +219,33 @@ export class FinanceiroComponent {
     return {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom' as const, labels: { usePointStyle: true, font: { size: 11 } } } },
-      scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v: number) => `R$${v}` } } },
+      plugins: {
+        legend: {
+          position: 'bottom' as const,
+          labels: { usePointStyle: true, font: { size: 11 }, padding: 12 },
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          padding: 10,
+          cornerRadius: 6,
+          callbacks: {
+            label: (ctx: { dataset: { label?: string }; parsed: { y: number } }) =>
+              `${ctx.dataset.label}: R$ ${ctx.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+          },
+        },
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: {
+          stacked: true,
+          grid: { color: 'rgba(0, 0, 0, 0.04)' },
+          ticks: { callback: (v: number) => `R$${v}`, font: { size: 10 } },
+        },
+      },
     };
   });
 
+  // Gráfico de área com gradient verde para receita acumulada
   protected readonly lineChartData = computed(() => {
     const items = this.filteredTransacoes();
     const byDay: Record<string, number> = {};
@@ -168,28 +257,58 @@ export class FinanceiroComponent {
     const values = labels.map(l => byDay[l]);
     const cumulative: number[] = [];
     values.forEach((v, i) => cumulative.push((cumulative[i - 1] || 0) + v));
+
     return {
       labels,
       datasets: [{
         label: 'Receita Acumulada',
         data: cumulative,
         borderColor: '#3A7D44',
-        backgroundColor: 'rgba(58, 125, 68, 0.1)',
+        backgroundColor: (ctx: { chart: { ctx: CanvasRenderingContext2D; chartArea?: { top: number; bottom: number } } }) => {
+          const chart = ctx.chart;
+          const { ctx: canvas, chartArea } = chart;
+          if (!chartArea) return 'rgba(58, 125, 68, 0.2)';
+          const gradient = canvas.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          gradient.addColorStop(0, 'rgba(58, 125, 68, 0.35)');
+          gradient.addColorStop(1, 'rgba(58, 125, 68, 0.02)');
+          return gradient;
+        },
         fill: true,
-        tension: 0.3,
+        tension: 0.35,
         pointRadius: 3,
+        pointHoverRadius: 6,
         pointBackgroundColor: '#3A7D44',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        borderWidth: 2.5,
       }],
     };
   });
 
   protected readonly lineChartOptions = computed(() => {
-    this.filteredTransacoes(); // trigger reactivity
+    this.filteredTransacoes();
     return {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { ticks: { callback: (v: number) => `R$${v}` } } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          padding: 10,
+          cornerRadius: 6,
+          callbacks: {
+            label: (ctx: { parsed: { y: number } }) =>
+              `Acumulado: R$ ${ctx.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+          },
+        },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: {
+          grid: { color: 'rgba(0, 0, 0, 0.04)' },
+          ticks: { callback: (v: number) => `R$${v}`, font: { size: 10 } },
+        },
+      },
     };
   });
 

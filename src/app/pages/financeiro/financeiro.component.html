@@ -21,28 +21,66 @@
   />
 </div>
 
-<div class="kpi-row">
-  <div class="kpi-item">
-    <span class="kpi-item-label">Receita Total</span>
-    <span class="kpi-item-value">{{ total() | currency:'BRL':'symbol':'1.0-0' }}</span>
+<div class="kpi-grid">
+  <div class="kpi-card kpi-card--total">
+    <div class="kpi-icon"><i class="pi pi-dollar"></i></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Receita Total</span>
+      <span class="kpi-value">{{ total() | currency:'BRL':'symbol':'1.0-0' }}</span>
+      @if (varTotal().hasData) {
+        <span class="kpi-trend" [class.kpi-trend--up]="varTotal().positive" [class.kpi-trend--down]="!varTotal().positive">
+          <i class="pi" [class.pi-arrow-up-right]="varTotal().positive" [class.pi-arrow-down-right]="!varTotal().positive"></i>
+          {{ varTotal().positive ? '+' : '-' }}{{ varTotal().percent | number:'1.1-1' }}% vs período anterior
+        </span>
+      } @else {
+        <span class="kpi-trend kpi-trend--muted">— sem comparativo</span>
+      }
+    </div>
   </div>
-  <div class="kpi-divider"></div>
-  <div class="kpi-item">
-    <span class="kpi-item-label">Hospedagem</span>
-    <span class="kpi-item-value kpi-item-value--hosp">{{ totalHospedagem() | currency:'BRL':'symbol':'1.0-0' }}</span>
-    <span class="kpi-item-sub">{{ totalCheckouts() }} checkout(s)</span>
+
+  <div class="kpi-card kpi-card--hosp">
+    <div class="kpi-icon"><i class="pi pi-home"></i></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Hospedagem</span>
+      <span class="kpi-value">{{ totalHospedagem() | currency:'BRL':'symbol':'1.0-0' }}</span>
+      <span class="kpi-meta">{{ totalCheckouts() }} checkout(s)</span>
+      @if (varHospedagem().hasData) {
+        <span class="kpi-trend" [class.kpi-trend--up]="varHospedagem().positive" [class.kpi-trend--down]="!varHospedagem().positive">
+          <i class="pi" [class.pi-arrow-up-right]="varHospedagem().positive" [class.pi-arrow-down-right]="!varHospedagem().positive"></i>
+          {{ varHospedagem().positive ? '+' : '-' }}{{ varHospedagem().percent | number:'1.1-1' }}%
+        </span>
+      }
+    </div>
   </div>
-  <div class="kpi-divider"></div>
-  <div class="kpi-item">
-    <span class="kpi-item-label">Restaurante</span>
-    <span class="kpi-item-value kpi-item-value--rest">{{ totalRestaurante() | currency:'BRL':'symbol':'1.0-0' }}</span>
-    <span class="kpi-item-sub">{{ totalComandasFechadas() }} comanda(s)</span>
+
+  <div class="kpi-card kpi-card--rest">
+    <div class="kpi-icon"><i class="pi pi-shop"></i></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Restaurante</span>
+      <span class="kpi-value">{{ totalRestaurante() | currency:'BRL':'symbol':'1.0-0' }}</span>
+      <span class="kpi-meta">{{ totalComandasFechadas() }} comanda(s)</span>
+      @if (varRestaurante().hasData) {
+        <span class="kpi-trend" [class.kpi-trend--up]="varRestaurante().positive" [class.kpi-trend--down]="!varRestaurante().positive">
+          <i class="pi" [class.pi-arrow-up-right]="varRestaurante().positive" [class.pi-arrow-down-right]="!varRestaurante().positive"></i>
+          {{ varRestaurante().positive ? '+' : '-' }}{{ varRestaurante().percent | number:'1.1-1' }}%
+        </span>
+      }
+    </div>
   </div>
-  <div class="kpi-divider"></div>
-  <div class="kpi-item">
-    <span class="kpi-item-label">Ticket Medio</span>
-    <span class="kpi-item-value">{{ avgStayValue() | currency:'BRL':'symbol':'1.0-0' }}</span>
-    <span class="kpi-item-sub">por estadia</span>
+
+  <div class="kpi-card kpi-card--ticket">
+    <div class="kpi-icon"><i class="pi pi-ticket"></i></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Ticket Médio</span>
+      <span class="kpi-value">{{ avgStayValue() | currency:'BRL':'symbol':'1.0-0' }}</span>
+      <span class="kpi-meta">por estadia</span>
+      @if (varTicket().hasData) {
+        <span class="kpi-trend" [class.kpi-trend--up]="varTicket().positive" [class.kpi-trend--down]="!varTicket().positive">
+          <i class="pi" [class.pi-arrow-up-right]="varTicket().positive" [class.pi-arrow-down-right]="!varTicket().positive"></i>
+          {{ varTicket().positive ? '+' : '-' }}{{ varTicket().percent | number:'1.1-1' }}%
+        </span>
+      }
+    </div>
   </div>
 </div>
 
@@ -85,7 +123,7 @@
     <ng-template #header>
       <div class="section-header">
         <i class="pi pi-list"></i>
-        <span>Transacoes</span>
+        <span>Transações</span>
         @if (filteredTransacoes().length > 0) {
           <span class="section-count">({{ filteredTransacoes().length }})</span>
         }
@@ -93,7 +131,7 @@
     </ng-template>
 
     @if (filteredTransacoes().length === 0) {
-      <div class="empty-state"><i class="pi pi-inbox"></i><p>Nenhuma transacao no periodo</p></div>
+      <div class="empty-state"><i class="pi pi-inbox"></i><p>Nenhuma transação no período</p></div>
     } @else {
       <p-table
         [value]="filteredTransacoes()"
@@ -106,7 +144,7 @@
         <ng-template #header>
           <tr>
             <th pSortableColumn="data">Data <p-sortIcon field="data" /></th>
-            <th>Descricao</th>
+            <th>Descrição</th>
             <th>Tipo</th>
             <th pSortableColumn="valor">Valor <p-sortIcon field="valor" /></th>
           </tr>
@@ -114,9 +152,9 @@
         <ng-template #body let-t>
           <tr>
             <td><span class="p-column-title">Data</span>{{ t.data | date:'dd/MM/yyyy' }}</td>
-            <td><span class="p-column-title">Descricao</span>{{ t.descricao }}</td>
+            <td><span class="p-column-title">Descrição</span>{{ t.descricao }}</td>
             <td><span class="p-column-title">Tipo</span><p-tag [value]="getTagLabel(t.tipo)" [severity]="getTagSeverity(t.tipo)" /></td>
-            <td><span class="p-column-title">Valor</span><span class="valor-cell">{{ t.valor | currency:'BRL':'symbol':'1.2-2' }}</span></td>
+            <td><span class="p-column-title">Valor</span><span class="valor-cell">+ {{ t.valor | currency:'BRL':'symbol':'1.2-2' }}</span></td>
           </tr>
         </ng-template>
       </p-table>
