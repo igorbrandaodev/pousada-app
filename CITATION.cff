@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "PousadaApp: cloud-based integrated management system for small inns"
+abstract: >-
+  Multi-tenant SaaS solution that integrates property management (PMS),
+  point-of-sale (POS) and financial reporting for small Brazilian inns.
+  Developed as the final project for the MBA in Software Engineering at
+  USP/Esalq (2026).
+authors:
+  - family-names: "Brandao Fagundes do Nascimento"
+    given-names: "Igor"
+    email: "igor.brandao@usp.br"
+    affiliation: "USP/Esalq - MBA em Engenharia de Software"
+date-released: "2026-04-22"
+url: "https://github.com/igorbrandaodev/pousada-app"
+repository-code: "https://github.com/igorbrandaodev/pousada-app"
+license: MIT
+keywords:
+  - "Property Management System"
+  - "Point of Sale"
+  - "Software as a Service"
+  - "Clean Architecture"
+  - "small and medium enterprises"
+  - "hospitality"
+references:
+  - type: thesis
+    title: >-
+      Sistema integrado de gestao em nuvem para pousadas: desenvolvimento de
+      solucao SaaS para hospedagem e restaurante
+    authors:
+      - family-names: "Brandao Fagundes do Nascimento"
+        given-names: "Igor"
+    institution:
+      name: "USP/Esalq"
+    thesis-type: "TCC MBA"
+    year: 2026

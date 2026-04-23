@@ -1,6 +1,8 @@
 # PousadaApp
 
-Sistema SaaS multi-tenant de gestao integrada para pousadas, desenvolvido como TCC do MBA em Data Science & Analytics da USP/Esalq.
+Sistema SaaS multi-tenant de gestao integrada para pousadas, desenvolvido como TCC do MBA em Engenharia de Software da USP/Esalq.
+
+Autor: Igor Brandao Fagundes do Nascimento — Orientador: Prof. Victor Inacio de Oliveira
 
 Integra **Hospedagem** (quartos, hospedes, reservas), **Restaurante / POS** (cardapio, comandas) e **Financeiro** (consolidacao de receitas) em uma unica plataforma.
 
@@ -94,6 +96,14 @@ pousada-app/
   .github/workflows/             # CI + deploys Azure
 ```
 
+## Citacao
+
+Se voce utilizar este software academicamente, por favor cite conforme `CITATION.cff`.
+
+## Licenca
+
+MIT — veja `LICENSE`.
+
 ## TCC
 
-Documento completo, diagramas e prints em `Desktop/TCC MBA/` (fora deste repositorio publico).
+Trabalho de conclusao do MBA em Engenharia de Software da USP/Esalq (2026). Documento, diagramas e prints permanecem com o autor; este repositorio contem o artefato de software desenvolvido.
