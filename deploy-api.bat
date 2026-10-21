@@ -40,7 +40,7 @@ if not exist pousadaapp-api.zip (
 
 :: Deploy to Azure
 echo [4/5] Deploying to Azure App Service...
-powershell -Command "& az webapp deployment source config-zip --resource-group pousadaapp-rg --name pousadaapp-api --src pousadaapp-api.zip"
+powershell -Command "& az webapp deployment source config-zip --resource-group free --name pousadaapp-api --src pousadaapp-api.zip"
 
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Deployment failed!

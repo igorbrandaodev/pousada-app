@@ -18,6 +18,14 @@ interface LoginResponse {
   empresaId: number;
 }
 
+export interface RegisterRequest {
+  nome: string;
+  email: string;
+  senha: string;
+  nomeEmpresa: string;
+  urlSlug: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -35,21 +43,41 @@ export class AuthService {
     }
   }
 
+  register(data: RegisterRequest): Promise<{ success: boolean; message?: string }> {
+    return new Promise((resolve) => {
+      this.http.post<LoginResponse>(`${environment.apiUrl}/Auth/register`, data)
+        .subscribe({
+          next: (res) => {
+            this.storeSession(res);
+            resolve({ success: true });
+          },
+          error: (err) => resolve({
+            success: false,
+            message: err?.error?.message ?? 'Nao foi possivel concluir o cadastro'
+          })
+        });
+    });
+  }
+
   login(email: string, senha: string): Promise<boolean> {
     return new Promise((resolve) => {
       this.http.post<LoginResponse>(`${environment.apiUrl}/Auth/login`, { email, senha })
         .subscribe({
           next: (res) => {
-            localStorage.setItem('pousada_token', res.token);
-            const user: User = { nome: res.nome, email: res.email, role: res.role, empresaId: res.empresaId };
-            localStorage.setItem('pousada_user', JSON.stringify(user));
-            this.currentUser.set(user);
-            this.isLoggedIn.set(true);
+            this.storeSession(res);
             resolve(true);
           },
           error: () => resolve(false)
         });
     });
+  }
+
+  private storeSession(res: LoginResponse): void {
+    localStorage.setItem('pousada_token', res.token);
+    const user: User = { nome: res.nome, email: res.email, role: res.role, empresaId: res.empresaId };
+    localStorage.setItem('pousada_user', JSON.stringify(user));
+    this.currentUser.set(user);
+    this.isLoggedIn.set(true);
   }
 
   logout(): void {

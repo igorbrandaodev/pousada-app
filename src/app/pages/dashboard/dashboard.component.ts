@@ -12,6 +12,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { Fluid } from 'primeng/fluid';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
+import { Message } from 'primeng/message';
 import { QuartoService } from '../../core/services/quarto.service';
 import { ReservaService } from '../../core/services/reserva.service';
 import { ComandaService } from '../../core/services/comanda.service';
@@ -36,7 +37,7 @@ interface RoomDetail {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, CardModule, TagModule, ButtonModule, DrawerModule, Dialog, Select, DatePicker, Fluid, InputText, Textarea],
+  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, CardModule, TagModule, ButtonModule, DrawerModule, Dialog, Select, DatePicker, Fluid, InputText, Textarea, Message],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -55,7 +56,10 @@ export class DashboardComponent {
   protected newReservaVisible = signal(false);
   protected newReservaQuartoId = signal<number | null>(null);
   protected newReservaForm = { idHospede: null as number | null, dateRange: null as Date[] | null, observacoes: '' };
-  protected today = new Date();
+  protected newReservaError = signal('');
+  // Midnight, not "now": p-datepicker clamps a selected date below minDate up to it,
+  // which would leak the current time into the check-in and corrupt the nights count
+  protected today = new Date(new Date().setHours(0, 0, 0, 0));
 
   // New hospede dialog state
   protected newHospedeVisible = signal(false);
@@ -217,6 +221,7 @@ export class DashboardComponent {
   private openNewReserva(quartoId: number): void {
     this.newReservaQuartoId.set(quartoId);
     this.newReservaForm = { idHospede: null, dateRange: null, observacoes: '' };
+    this.newReservaError.set('');
     this.newReservaVisible.set(true);
   }
 
@@ -225,14 +230,20 @@ export class DashboardComponent {
     const range = this.newReservaForm.dateRange;
     if (!quartoId || !this.newReservaForm.idHospede || !range || !range[0] || !range[1]) return;
 
+    this.newReservaError.set('');
     this.reservaService.add({
       idHospede: this.newReservaForm.idHospede,
       idQuarto: quartoId,
       dataCheckin: range[0],
       dataCheckout: range[1],
       observacoes: this.newReservaForm.observacoes,
+    }, (error?: string) => {
+      if (error) {
+        this.newReservaError.set(error);
+      } else {
+        this.newReservaVisible.set(false);
+      }
     });
-    this.newReservaVisible.set(false);
   }
 
   protected confirmReserva(reservaId: number): void {

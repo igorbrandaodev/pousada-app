@@ -54,24 +54,35 @@ export class ReservaService {
     return reserva ? this.populateReserva(reserva) : undefined;
   }
 
-  add(reserva: Partial<Reserva>): void {
-    this.http.post(this.url, {
-      idHospede: reserva.idHospede,
-      idQuarto: reserva.idQuarto,
-      dataCheckin: reserva.dataCheckin,
-      dataCheckout: reserva.dataCheckout,
-      observacoes: reserva.observacoes
-    }).subscribe({ next: () => this.loadAll() });
+  add(reserva: Partial<Reserva>, onResult?: (error?: string) => void): void {
+    this.http.post(this.url, this.toPayload(reserva)).subscribe({
+      next: () => { this.loadAll(); onResult?.(); },
+      error: (err) => onResult?.(err?.error?.message ?? 'Nao foi possivel salvar a reserva')
+    });
   }
 
-  update(reserva: Reserva): void {
-    this.http.put(`${this.url}/${reserva.id}`, {
+  update(reserva: Reserva, onResult?: (error?: string) => void): void {
+    this.http.put(`${this.url}/${reserva.id}`, this.toPayload(reserva)).subscribe({
+      next: () => { this.loadAll(); onResult?.(); },
+      error: (err) => onResult?.(err?.error?.message ?? 'Nao foi possivel salvar a reserva')
+    });
+  }
+
+  private toPayload(reserva: Partial<Reserva>) {
+    return {
       idHospede: reserva.idHospede,
       idQuarto: reserva.idQuarto,
-      dataCheckin: reserva.dataCheckin,
-      dataCheckout: reserva.dataCheckout,
+      dataCheckin: this.toDateOnly(reserva.dataCheckin!),
+      dataCheckout: this.toDateOnly(reserva.dataCheckout!),
       observacoes: reserva.observacoes
-    }).subscribe({ next: () => this.loadAll() });
+    };
+  }
+
+  // Serialize as the local calendar date; Date.toJSON() would shift to UTC and could land on another day
+  private toDateOnly(date: Date | string): string {
+    const d = new Date(date);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   updateStatus(id: number, status: Reserva['status']): void {

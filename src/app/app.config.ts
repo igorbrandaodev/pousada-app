@@ -8,6 +8,7 @@ import Aura from '@primeng/themes/aura';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { apiWakeUpInterceptor } from './core/interceptors/api-wake-up.interceptor';
 
 const CanastraPreset = definePreset(Aura, {
   semantic: {
@@ -32,7 +33,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([apiWakeUpInterceptor, authInterceptor])),
     providePrimeNG({
       theme: {
         preset: CanastraPreset,

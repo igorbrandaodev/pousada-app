@@ -84,7 +84,10 @@ public class ReservasController(PousadaDbContext db) : BaseController
         if (!hospede)
             return BadRequest(new { message = "Hospede nao encontrado" });
 
-        var nights = (dto.DataCheckout - dto.DataCheckin).Days;
+        // Compare calendar dates only: a check-in carrying a time-of-day would truncate the nights count
+        var checkin = dto.DataCheckin.Date;
+        var checkout = dto.DataCheckout.Date;
+        var nights = (checkout - checkin).Days;
         if (nights <= 0)
             return BadRequest(new { message = "Data de checkout deve ser posterior ao checkin" });
 
@@ -93,8 +96,8 @@ public class ReservasController(PousadaDbContext db) : BaseController
             IdEmpresa = empresaId,
             IdHospede = dto.IdHospede,
             IdQuarto = dto.IdQuarto,
-            DataCheckin = dto.DataCheckin,
-            DataCheckout = dto.DataCheckout,
+            DataCheckin = checkin,
+            DataCheckout = checkout,
             Observacoes = dto.Observacoes,
             ValorTotal = quarto.PrecoDiaria * nights
         };
@@ -123,14 +126,16 @@ public class ReservasController(PousadaDbContext db) : BaseController
         if (quarto is null)
             return BadRequest(new { message = "Quarto nao encontrado" });
 
-        var nights = (dto.DataCheckout - dto.DataCheckin).Days;
+        var checkin = dto.DataCheckin.Date;
+        var checkout = dto.DataCheckout.Date;
+        var nights = (checkout - checkin).Days;
         if (nights <= 0)
             return BadRequest(new { message = "Data de checkout deve ser posterior ao checkin" });
 
         reserva.IdHospede = dto.IdHospede;
         reserva.IdQuarto = dto.IdQuarto;
-        reserva.DataCheckin = dto.DataCheckin;
-        reserva.DataCheckout = dto.DataCheckout;
+        reserva.DataCheckin = checkin;
+        reserva.DataCheckout = checkout;
         reserva.Observacoes = dto.Observacoes;
         reserva.ValorTotal = quarto.PrecoDiaria * nights;
         reserva.UpdatedAt = DateTime.UtcNow;

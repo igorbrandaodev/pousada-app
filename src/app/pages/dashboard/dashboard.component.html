@@ -310,6 +310,9 @@
     </div>
   </p-fluid>
   <ng-template #footer>
+    @if (newReservaError()) {
+      <p-message severity="error" [text]="newReservaError()" styleClass="dialog-error" />
+    }
     <div class="dialog-footer">
       <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="newReservaVisible.set(false)" />
       <p-button label="Salvar" icon="pi pi-check" (onClick)="saveNewReserva()" [disabled]="!isNewReservaValid" />

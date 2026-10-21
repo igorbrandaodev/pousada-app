@@ -16,7 +16,13 @@ if %ERRORLEVEL% neq 0 (
 
 :: Deploy to Static Web App
 echo [2/3] Deploying to Azure Static Web App...
-swa deploy dist/pousada-app/browser --deployment-token %AZURE_SWA_TOKEN% --env production
+
+:: Fetch the deployment token from Azure if not already set (requires az login)
+if "%AZURE_SWA_TOKEN%"=="" (
+    for /f "delims=" %%i in ('az staticwebapp secrets list -n pousadaapp-front -g free --query properties.apiKey -o tsv') do set AZURE_SWA_TOKEN=%%i
+)
+
+swa deploy dist/pousada-app/browser --deployment-token %AZURE_SWA_TOKEN% --app-name pousadaapp-front --env production
 
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Deployment failed!
@@ -38,6 +44,12 @@ echo.
 echo ==========================================
 echo      Frontend Deployment Complete!
 echo ==========================================
+echo.
+echo Your PousadaApp is available at:
+echo https://blue-bush-0f3cc670f.7.azurestaticapps.net
+echo.
+echo API Backend:
+echo https://pousadaapp-api.azurewebsites.net
 echo.
 echo Done! Press any key to exit...
 pause > nul

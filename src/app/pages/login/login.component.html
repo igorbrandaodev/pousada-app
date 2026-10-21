@@ -3,10 +3,52 @@
     <div class="login-header">
       <i class="pi pi-building login-icon"></i>
       <h1>PousadaApp</h1>
-      <p>Sistema de Gestao</p>
+      @if (mode() === 'login') {
+        <p>Sistema de Gestao</p>
+      } @else {
+        <p>Cadastre sua pousada</p>
+      }
     </div>
 
     <form (ngSubmit)="onSubmit()" class="login-form">
+      @if (mode() === 'register') {
+        <div class="field">
+          <label for="nomeEmpresa">Nome da pousada</label>
+          <input pInputText
+                 id="nomeEmpresa"
+                 type="text"
+                 placeholder="Pousada Vista Linda"
+                 [ngModel]="nomeEmpresa()"
+                 (ngModelChange)="onNomeEmpresaChange($event)"
+                 name="nomeEmpresa"
+                 class="input-full" />
+        </div>
+
+        <div class="field">
+          <label for="urlSlug">Identificador (URL)</label>
+          <input pInputText
+                 id="urlSlug"
+                 type="text"
+                 placeholder="pousada-vista-linda"
+                 [ngModel]="urlSlug()"
+                 (ngModelChange)="onSlugChange($event)"
+                 name="urlSlug"
+                 class="input-full" />
+        </div>
+
+        <div class="field">
+          <label for="nome">Seu nome</label>
+          <input pInputText
+                 id="nome"
+                 type="text"
+                 placeholder="Nome completo"
+                 [ngModel]="nome()"
+                 (ngModelChange)="nome.set($event)"
+                 name="nome"
+                 class="input-full" />
+        </div>
+      }
+
       <div class="field">
         <label for="email">Email</label>
         <input pInputText
@@ -26,7 +68,7 @@
                     (ngModelChange)="password.set($event)"
                     name="password"
                     placeholder="Sua senha"
-                    [feedback]="false"
+                    [feedback]="mode() === 'register'"
                     [toggleMask]="true"
                     styleClass="input-full" />
       </div>
@@ -35,11 +77,29 @@
         <p-message severity="error" [text]="errorMessage()" styleClass="login-error" />
       }
 
-      <p-button label="Entrar"
-                icon="pi pi-sign-in"
-                type="submit"
-                [loading]="loading()"
-                styleClass="login-btn" />
+      @if (mode() === 'login') {
+        <p-button label="Entrar"
+                  icon="pi pi-sign-in"
+                  type="submit"
+                  [loading]="loading()"
+                  styleClass="login-btn" />
+      } @else {
+        <p-button label="Criar conta"
+                  icon="pi pi-check"
+                  type="submit"
+                  [loading]="loading()"
+                  styleClass="login-btn" />
+      }
     </form>
+
+    <div class="login-switch">
+      @if (mode() === 'login') {
+        <span>Ainda nao tem conta?</span>
+        <button type="button" class="switch-link" (click)="toggleMode()">Cadastre sua pousada</button>
+      } @else {
+        <span>Ja tem conta?</span>
+        <button type="button" class="switch-link" (click)="toggleMode()">Entrar</button>
+      }
+    </div>
   </div>
 </div>

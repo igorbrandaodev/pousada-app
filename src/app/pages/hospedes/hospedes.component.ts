@@ -8,7 +8,6 @@ import { Button } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Fluid } from 'primeng/fluid';
-import { Tooltip } from 'primeng/tooltip';
 import { HospedeService } from '../../core/services/hospede.service';
 import { Hospede } from '../../core/models';
 
@@ -25,7 +24,6 @@ import { Hospede } from '../../core/models';
     IconField,
     InputIcon,
     Fluid,
-    Tooltip,
   ],
   templateUrl: './hospedes.component.html',
   styleUrl: './hospedes.component.scss',

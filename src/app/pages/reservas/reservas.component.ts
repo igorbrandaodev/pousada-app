@@ -7,9 +7,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
-import { Tag } from 'primeng/tag';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
+import { Message } from 'primeng/message';
 import { Fluid } from 'primeng/fluid';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tooltip } from 'primeng/tooltip';
@@ -39,9 +37,7 @@ type ReservaStatus = Reserva['status'];
     InputText,
     Textarea,
     Button,
-    Tag,
-    IconField,
-    InputIcon,
+    Message,
     Fluid,
     ConfirmDialog,
     Tooltip,
@@ -78,7 +74,10 @@ export class ReservasComponent {
   protected hospedesList = this.hospedeService.hospedes;
   protected quartosList = this.quartoService.quartos;
 
-  protected today = new Date();
+  // Midnight, not "now": p-datepicker clamps a selected date below minDate up to it,
+  // which would leak the current time into the check-in and corrupt the nights count
+  protected today = new Date(new Date().setHours(0, 0, 0, 0));
+  protected saveError = signal('');
   protected reservaForm: Partial<Reserva> & { dateRange: Date[] | null } = this.emptyReserva();
 
   @ViewChild('dt') private dt!: Table;
@@ -209,6 +208,7 @@ export class ReservasComponent {
 
   protected openNew(): void {
     this.reservaForm = this.emptyReserva();
+    this.saveError.set('');
     this.editing.set(false);
     this.dialogVisible.set(true);
   }
@@ -218,6 +218,7 @@ export class ReservasComponent {
       ...reserva,
       dateRange: [new Date(reserva.dataCheckin), new Date(reserva.dataCheckout)],
     };
+    this.saveError.set('');
     this.editing.set(true);
     this.dialogVisible.set(true);
   }
@@ -237,13 +238,21 @@ export class ReservasComponent {
       observacoes: this.reservaForm.observacoes,
     };
 
+    this.saveError.set('');
+    const onResult = (error?: string) => {
+      if (error) {
+        this.saveError.set(error);
+      } else {
+        this.dialogVisible.set(false);
+      }
+    };
+
     if (this.editing()) {
-      this.reservaService.update(reserva);
+      this.reservaService.update(reserva, onResult);
     } else {
       const { id, ...data } = reserva;
-      this.reservaService.add(data);
+      this.reservaService.add(data, onResult);
     }
-    this.dialogVisible.set(false);
   }
 
   protected confirmarReserva(reserva: Reserva): void {
